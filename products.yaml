@@ -1,0 +1,342 @@
+products:
+  - slug: stock-scanner
+    name: Stock Scanner
+    repo_url: https://github.com/AscontiLab/stock-scanner
+    category: trading-signals
+    objective: >
+      Markt- und signalnahe Produktbewegungen beobachten, die fuer Scanner,
+      Backtesting, Explainability, Review Loops und operatorische Entscheidungen
+      relevant sind.
+    keywords:
+      - stock scanner
+      - trade signals
+      - screener
+      - backtesting
+      - explainability
+      - market regime
+      - alerting
+      - portfolio review
+      - signal ranking
+      - trading journal
+    priority_signal_types:
+      - scanner_logic_change
+      - signal_explainability
+      - backtesting_or_review_feature
+      - alerting_or_execution_feature
+      - portfolio_or_journal_link
+      - ai_assistant_or_automation
+      - ui_speed_or_operator_workflow
+      - pricing_or_packaging_change
+    competitors:
+      - slug: trendspider
+        name: TrendSpider
+        tier: must_track
+        relevance: >
+          Sehr nah an Scanner-, Alert-, Strategy- und Backtesting-Workflows.
+        source_urls:
+          - https://trendspider.com/
+          - https://trendspider.com/blog/
+        watch_for:
+          - scanner builder changes
+          - backtesting upgrades
+          - alert logic
+          - ai workflow changes
+
+      - slug: tradingview
+        name: TradingView
+        tier: must_track
+        relevance: >
+          Marktstandard fuer Screener, Watchlists, Alerts und Strategy-Operator-UX.
+        source_urls:
+          - https://www.tradingview.com/features/
+          - https://www.tradingview.com/support/
+        watch_for:
+          - screener changes
+          - alerting changes
+          - strategy tester updates
+          - workflow ux patterns
+
+      - slug: finviz
+        name: Finviz
+        tier: must_track
+        relevance: >
+          Schnell nutzbarer Screener- und Marktueberblick-Standard mit effizienter
+          Operator-Darstellung.
+        source_urls:
+          - https://finviz.com/
+          - https://finviz.com/blog/
+        watch_for:
+          - screener additions
+          - alerting additions
+          - chart or watchlist workflow changes
+          - market overview features
+
+      - slug: chartmill
+        name: ChartMill
+        tier: must_track
+        relevance: >
+          Relevant fuer Screening, Ratings, technische Metriken und Setup-Qualitaet.
+        source_urls:
+          - https://www.chartmill.com/
+          - https://www.chartmill.com/news/default/
+        watch_for:
+          - screener filters
+          - rating logic
+          - signal ranking
+          - research workflow changes
+
+      - slug: tradersync
+        name: TraderSync
+        tier: must_track
+        relevance: >
+          Wichtig fuer den Teil nach dem Signal: Journal, Review, Tagging und
+          Performance-Auswertung.
+        source_urls:
+          - https://tradersync.com/features/
+        watch_for:
+          - review workflows
+          - tagging analytics
+          - performance breakdowns
+          - ai review features
+
+      - slug: edgewonk
+        name: Edgewonk
+        tier: nice_to_track
+        relevance: >
+          Stark fuer Review-Loop, Pattern-Erkennung und journaling-nahe
+          Verbesserungen.
+        source_urls:
+          - https://edgewonk.com/
+          - https://edgewonk.com/features
+        watch_for:
+          - trade review patterns
+          - psychology or discipline features
+          - setup analytics
+
+      - slug: marketsmith
+        name: MarketSmith
+        tier: nice_to_track
+        relevance: >
+          Weniger scannernah, aber relevant fuer Research-Context und Setup-Qualitaet.
+        source_urls:
+          - https://www.marketsmith.com/
+        watch_for:
+          - research overlays
+          - rating systems
+          - growth workflow changes
+
+      - slug: quantconnect
+        name: QuantConnect
+        tier: ignore_for_now
+        relevance: >
+          Technisch interessant, aber fuer den ersten Product-Radar zu weit von
+          der aktuellen Operator-Zielgruppe entfernt.
+        source_urls:
+          - https://www.quantconnect.com/
+        github_repos:
+          - QuantConnect/Lean
+        watch_for:
+          - strategy research
+          - backtesting engine changes
+          - release cadence
+
+  - slug: sports-scanner
+    name: Sports Scanner
+    repo_url: https://github.com/AscontiLab/sports-scanner
+    category: sports-betting-analytics
+    objective: >
+      Produktbewegungen beobachten, die fuer Odds-Analyse, Review, Bankroll,
+      CLV, Signalqualitaet und operatorische Betting-Workflows relevant sind.
+    keywords:
+      - sports betting
+      - odds
+      - bankroll
+      - roi
+      - clv
+      - closing line value
+      - bet tracking
+      - betting analytics
+      - line shopping
+      - execution support
+    priority_signal_types:
+      - odds_or_market_coverage_change
+      - clv_or_roi_analytics
+      - bankroll_or_portfolio_review
+      - bet_sync_or_execution_support
+      - signal_confidence_or_explanation
+      - ai_or_model_feature
+      - social_or_copy_betting_feature
+      - pricing_or_packaging_change
+    competitors:
+      - slug: oddsjam
+        name: OddsJam
+        tier: must_track
+        relevance: >
+          Direkt relevant fuer Odds-Vergleich, CLV, Bet Tracker, Marktgeschwindigkeit
+          und operative Edge-Workflows.
+        source_urls:
+          - https://oddsjam.com/
+        watch_for:
+          - line shopping
+          - clv features
+          - market coverage
+          - execution workflows
+
+      - slug: action-network
+        name: Action Network
+        tier: must_track
+        relevance: >
+          Sehr relevant fuer Tracking, CLV-Breakdown, Performance-Auswertung und
+          Bet-Review-UX.
+        source_urls:
+          - https://www.actionnetwork.com/
+        watch_for:
+          - tracking analytics
+          - clv breakdowns
+          - bankroll reporting
+          - app workflow changes
+
+      - slug: betstamp
+        name: Betstamp
+        tier: must_track
+        relevance: >
+          Wichtig fuer Odds-Vergleich, Line-Shopping und Markttransparenz.
+        source_urls:
+          - https://betstamp.app/
+        watch_for:
+          - odds comparison
+          - line movement features
+          - market shop workflow
+
+      - slug: pikkit
+        name: Pikkit
+        tier: must_track
+        relevance: >
+          Wichtiger Benchmark fuer Bet Tracking, Book Sync, Portfolio-Ansichten
+          und Produktbindung.
+        source_urls:
+          - https://pikkit.com/
+          - https://pikkit.com/features
+          - https://pikkit.com/pro
+        watch_for:
+          - tracking analytics
+          - clv analysis
+          - sync features
+          - portfolio visualizations
+
+      - slug: juice-reel
+        name: Juice Reel
+        tier: must_track
+        relevance: >
+          Vergleichbar mit Pikkit fuer Tracking, Sync, Betting-Analytics und
+          Retention-Mechaniken.
+        source_urls:
+          - https://www.juicereel.buzz/
+        watch_for:
+          - sportsbook sync
+          - bankroll views
+          - analytics workflows
+
+      - slug: outlier
+        name: Outlier
+        tier: nice_to_track
+        relevance: >
+          Relevant als Modell- oder prediction-first Produkt, falls AI- oder
+          model-basierte Wett-Features wichtiger werden.
+        source_urls:
+          - https://outlier.bet/
+        watch_for:
+          - model outputs
+          - confidence presentation
+          - ai propositioning
+
+      - slug: oddsportal
+        name: OddsPortal
+        tier: nice_to_track
+        relevance: >
+          Gute Markt- und Datenreferenz, aber weniger wichtig als direktes
+          Produktvorbild.
+        source_urls:
+          - https://www.oddsportal.com/
+        watch_for:
+          - market coverage
+          - odds history
+
+      - slug: tipster-social-products
+        name: Tipster and Social Pick Platforms
+        tier: ignore_for_now
+        relevance: >
+          Viel Marketing- und Social-Rauschen, derzeit zu wenig belastbare
+          Produktsignale fuer den ersten Radar.
+        source_urls: []
+        watch_for:
+          - social feed only
+
+      - slug: flumine
+        name: Flumine
+        tier: nice_to_track
+        relevance: >
+          Open-Source-Benchmark fuer eventbasierte Betting-Execution,
+          Risiko- und Strategy-Workflows auf Exchange-Seite.
+        source_urls:
+          - https://github.com/betcode-org/flumine
+        github_repos:
+          - betcode-org/flumine
+        watch_for:
+          - execution framework changes
+          - risk management updates
+          - strategy workflow changes
+
+      - slug: sportsbook-odds-comparer
+        name: Sportsbook Odds Comparer
+        tier: nice_to_track
+        relevance: >
+          Nahliegende Referenz fuer Odds-Vergleich, Marktuebersicht und
+          operatorische Vergleichs-UX.
+        source_urls:
+          - https://github.com/avalos010/sportsbook-odds-comparer
+        github_repos:
+          - avalos010/sportsbook-odds-comparer
+        watch_for:
+          - odds comparison ux
+          - market coverage
+          - props workflow
+
+signal_types:
+  - slug: scanner_logic_change
+    description: Neue Logik oder neue Filter fuer Screening und Ranking.
+  - slug: signal_explainability
+    description: Erklaerung, Begruendung oder Transparenz fuer Signale.
+  - slug: backtesting_or_review_feature
+    description: Historische Auswertung, Slice-Analyse, Journaling oder Review.
+  - slug: alerting_or_execution_feature
+    description: Alerts, Routing, schnelle Umsetzung oder operatorische Follow-ups.
+  - slug: portfolio_or_journal_link
+    description: Verbindung von Signalen mit Portfolio-, Journal- oder Outcome-Daten.
+  - slug: ai_assistant_or_automation
+    description: AI-Funktionen, Agenten oder Automatisierung fuer Research und Decisions.
+  - slug: ui_speed_or_operator_workflow
+    description: UI-Aenderungen, die Entscheidungen schneller oder klarer machen.
+  - slug: pricing_or_packaging_change
+    description: Preis-, Paket- oder Positionierungs-Aenderungen mit strategischer Relevanz.
+  - slug: odds_or_market_coverage_change
+    description: Neue Buchmacher, Maerkte, Ligen oder Markt-Tiefe.
+  - slug: clv_or_roi_analytics
+    description: CLV-, ROI- oder Performance-Analyse fuer Betting-Workflows.
+  - slug: bankroll_or_portfolio_review
+    description: Bankroll-, Stake- oder Portfolio-Review.
+  - slug: bet_sync_or_execution_support
+    description: Bet-Sync, Slip-Unterstuetzung oder schnellere Execution.
+  - slug: signal_confidence_or_explanation
+    description: Confidence, EV- oder Signal-Erklaerung fuer Betting-Signale.
+  - slug: ai_or_model_feature
+    description: Modellbasierte oder AI-getriebene neue Features.
+  - slug: social_or_copy_betting_feature
+    description: Social-, Copy- oder Community-getriebene Features.
+
+recommendation_labels:
+  - adopt_now
+  - backlog
+  - watch
+  - ignore
+  - differentiate

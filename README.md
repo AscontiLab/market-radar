@@ -15,7 +15,7 @@ Decision Feed:
 
 ## Aktueller Stand
 
-Der aktuelle Stand ist `v0.3`:
+Der aktuelle Stand ist `v0.4`:
 
 - Watchlist fuer `stock-scanner` und `sports-scanner`
 - SQLite-Storage fuer Produkte, Wettbewerber, Snapshots und Signale
@@ -26,10 +26,16 @@ Der aktuelle Stand ist `v0.3`:
 - `decision_digest` mit 3 bis 5 verdichteten Produktentscheidungen
 - inhaltliche Snapshot-Diffs (Jaccard-Distanz, Satz-basiert)
 - LLM-Enrichment via Claude Haiku (Konfidenz, Summary, Recommendation)
+- LLM-Enrichment-Ergebnisse im Dashboard (Konfidenz-Balken, KI-Summary, Keywords)
+- Telegram-Alerts fuer `adopt_now`-Signale (`telegram_alerts.py`)
+- Feature-Vorschlaege aus Digest (`feature_suggestions.py`, CLI `suggest`)
+- GitHub Releases staerker gewichtet im Scoring
+- Error Handling fuer fehlgeschlagene Snapshots (Pipeline bricht nicht ab)
 - kleine lokale Dashboard-Ansicht
 - Integration in `unified-dashboard` unter `/market-radar`
 - `run-all` Pipeline-Befehl fuer kompletten Durchlauf
 - Cron-Job Mo-Fr 07:15 UTC via `run_market_radar.sh`
+- Git-Repo initialisiert und gepusht auf `AscontiLab/market-radar`
 
 ## Projektstruktur
 
@@ -51,6 +57,10 @@ Der aktuelle Stand ist `v0.3`:
   erzeugt erste Markt-Signale und die `decision_queue`
 - `market_radar/digest.py`
   verdichtet die Queue zum `decision_digest`
+- `market_radar/telegram_alerts.py`
+  Telegram-Alerts fuer adopt_now Signale
+- `market_radar/feature_suggestions.py`
+  leitet Feature-Vorschlaege aus dem Digest ab
 - `market_radar/dashboard.py`
   kleine lokale HTTP-Ansicht
 - `data/market_radar.db`
@@ -92,6 +102,9 @@ python3 main.py decision-digest --limit 5
 python3 main.py backfill             # source_type/source_kind nachtraeglich setzen
 python3 main.py diff --limit 20      # inhaltliche Snapshot-Diffs anzeigen
 python3 main.py enrich --limit 20    # LLM-Enrichment fuer offene Signale
+
+# Neue Befehle (v0.4)
+python3 main.py suggest              # Feature-Vorschlaege aus Digest ableiten
 
 # Dashboard
 python3 main.py dashboard --host 127.0.0.1 --port 8791
@@ -135,7 +148,7 @@ Die erste Pipeline arbeitet bewusst einfach und nachvollziehbar:
 1. ~~Snapshot-Diffs inhaltlich statt nur ueber Hashes auswerten~~ (erledigt: diff.py)
 2. ~~Deduplizierung und Signal-Clustering ausbauen~~ (erledigt: ROW_NUMBER Dedup)
 3. ~~LLM-Enrichment fuer bessere Signal-Qualitaet~~ (erledigt: llm_enricher.py)
-4. GitHub-Releases staerker von README-Signalen unterscheiden
-5. aus dem Digest direkte Feature-Vorschlaege pro Repo ableiten
-6. LLM-Enrichment-Ergebnisse im Dashboard anzeigen
-7. Telegram-Alerts fuer adopt_now Signale
+4. ~~GitHub-Releases staerker von README-Signalen unterscheiden~~ (erledigt: Releases staerker gewichtet)
+5. ~~aus dem Digest direkte Feature-Vorschlaege pro Repo ableiten~~ (erledigt: feature_suggestions.py)
+6. ~~LLM-Enrichment-Ergebnisse im Dashboard anzeigen~~ (erledigt: Konfidenz-Balken, Summary, Keywords)
+7. ~~Telegram-Alerts fuer adopt_now Signale~~ (erledigt: telegram_alerts.py)

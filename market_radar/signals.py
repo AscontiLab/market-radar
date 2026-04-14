@@ -246,11 +246,13 @@ def generate_signals(connection: sqlite3.Connection, config: dict) -> int:
                 candidate.competitor_tier,
                 candidate.changed,
                 candidate.keyword_hits,
+                source_kind=candidate.source_kind,
             )
             actionability = score_actionability(
                 candidate.signal_type,
                 candidate.changed,
                 candidate.keyword_hits,
+                source_kind=candidate.source_kind,
             )
             recommendation = recommendation_for(repo_fit, market_strength, actionability)
 
@@ -432,11 +434,13 @@ def build_decision_queue(
     query = f"""
         SELECT product_slug, competitor_slug, signal_type, title, summary,
                recommendation, repo_fit, market_strength, actionability,
-               detected_at, source_type, source_kind, source_url
+               detected_at, source_type, source_kind, source_url,
+               llm_summary, llm_confidence, llm_recommendation, llm_keywords
         FROM (
             SELECT ms.product_slug, ms.competitor_slug, ms.signal_type, ms.title, ms.summary,
                    ms.recommendation, ms.repo_fit, ms.market_strength, ms.actionability,
                    ms.detected_at, ms.source_type, ms.source_kind, ms.source_url,
+                   ms.llm_summary, ms.llm_confidence, ms.llm_recommendation, ms.llm_keywords,
                    ROW_NUMBER() OVER (
                        PARTITION BY ms.competitor_slug, ms.signal_type
                        ORDER BY (ms.repo_fit * 0.45 + ms.market_strength * 0.2 + ms.actionability * 0.35) DESC,
@@ -483,6 +487,10 @@ def build_decision_queue(
                     4,
                 ),
                 "detected_at": row["detected_at"],
+                "llm_summary": row["llm_summary"],
+                "llm_confidence": row["llm_confidence"],
+                "llm_recommendation": row["llm_recommendation"],
+                "llm_keywords": row["llm_keywords"],
             }
         )
     return queue

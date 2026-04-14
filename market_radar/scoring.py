@@ -41,15 +41,20 @@ def score_market_strength(
     competitor_tier: str,
     changed: bool,
     keyword_hits: int,
+    source_kind: str = "page",
 ) -> float:
     base = 0.3 + (0.35 if changed else 0.15)
     base += min(keyword_hits, 4) * 0.08
     base += 0.18 if competitor_tier == "must_track" else 0.05
     base += 0.06 if signal_type in {"pricing_or_packaging_change", "ai_or_model_feature"} else 0.0
+    if source_kind == "release":
+        base += 0.12
+    elif source_kind == "readme":
+        base += 0.05
     return clamp(base)
 
 
-def score_actionability(signal_type: str, changed: bool, keyword_hits: int) -> float:
+def score_actionability(signal_type: str, changed: bool, keyword_hits: int, source_kind: str = "page") -> float:
     base = 0.35
     if changed:
         base += 0.2
@@ -66,6 +71,8 @@ def score_actionability(signal_type: str, changed: bool, keyword_hits: int) -> f
         base += 0.1
     if signal_type in {"social_or_copy_betting_feature", "pricing_or_packaging_change"}:
         base -= 0.08
+    if source_kind == "release":
+        base += 0.10
     return clamp(base)
 
 

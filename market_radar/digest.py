@@ -24,8 +24,8 @@ SIGNAL_LABELS = {
 }
 
 SOURCE_KIND_WEIGHT = {
-    "release": 1.18,
-    "readme": 1.07,
+    "release": 1.25,
+    "readme": 1.10,
     "page": 1.0,
 }
 
@@ -45,6 +45,21 @@ def build_decision_digest(connection, product_slug: str | None = None, limit: in
         )
         top = ordered[:3]
         recommendation = digest_recommendation(top)
+
+        llm_summaries = [
+            item["llm_summary"] for item in top
+            if item.get("llm_summary") is not None
+        ]
+        llm_confidences = [
+            item["llm_confidence"] for item in top
+            if item.get("llm_confidence") is not None
+        ]
+        avg_confidence = (
+            round(sum(llm_confidences) / len(llm_confidences), 2)
+            if llm_confidences
+            else None
+        )
+
         digest.append(
             {
                 "product_slug": product,
@@ -60,6 +75,8 @@ def build_decision_digest(connection, product_slug: str | None = None, limit: in
                 "source_mix": sorted({f"{item['source_type']}:{item['source_kind']}" for item in top}),
                 "decision": build_decision_text(product, signal_type, top, recommendation),
                 "evidence": [item["title"] for item in top],
+                "llm_summaries": llm_summaries,
+                "avg_confidence": avg_confidence,
             }
         )
 
@@ -72,6 +89,8 @@ def digest_recommendation(items: list[dict]) -> str:
     github_release_count = sum(1 for item in items if item["source_kind"] == "release")
     avg_score = sum(item["priority_score"] for item in items) / max(len(items), 1)
 
+    if github_release_count >= 2:
+        return "adopt_now"
     if adopt_count >= 2 or (adopt_count >= 1 and github_release_count >= 1):
         return "adopt_now"
     if avg_score >= 0.72:

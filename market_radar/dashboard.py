@@ -42,6 +42,19 @@ body { font-family: Georgia, 'Times New Roman', serif; background: #f2eee6; colo
 .score { font-weight: 700; color: #1f3b4d; }
 a { color: #1e4e74; text-decoration: none; }
 code { background: rgba(31, 59, 77, 0.08); padding: 2px 6px; border-radius: 6px; }
+.confidence-bar { height: 4px; border-radius: 2px; margin: 6px 0; max-width: 120px; }
+.confidence-bar.high { background: #2d9e5f; }
+.confidence-bar.medium { background: #d9930e; }
+.confidence-bar.low { background: #c0392b; }
+.llm-summary { font-style: italic; color: #665a50; margin: 0 0 10px; line-height: 1.5; }
+.llm-chip { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 10px; letter-spacing: .04em; background: #e8e1ff; color: #3d2969; margin: 2px 2px 2px 0; }
+.llm-label { font-size: 12px; font-weight: 600; color: #81654b; margin-right: 4px; }
+.llm-bullets { margin: 6px 0 10px 16px; padding: 0; font-style: italic; color: #665a50; font-size: 14px; line-height: 1.55; }
+.llm-bullets li { margin-bottom: 4px; }
+.confidence-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; }
+.confidence-indicator.high { background: #2d9e5f; }
+.confidence-indicator.medium { background: #d9930e; }
+.confidence-indicator.low { background: #c0392b; }
 """
 
 
@@ -127,6 +140,42 @@ def render_card(item: dict) -> str:
     source_url = item["source_url"]
     source_link = source_url_to_link(source_url)
     source_text = source_url
+
+    # LLM confidence bar
+    confidence_html = ""
+    llm_confidence = item.get("llm_confidence")
+    if llm_confidence is not None:
+        pct = int(llm_confidence * 100)
+        level = "high" if llm_confidence > 0.7 else "medium" if llm_confidence >= 0.4 else "low"
+        confidence_html = f'<div class="confidence-bar {level}" style="width:{pct}%;" title="KI-Konfidenz: {pct}%"></div>'
+
+    # LLM summary
+    llm_summary_html = ""
+    if item.get("llm_summary"):
+        llm_summary_html = f'<p class="llm-summary"><span class="llm-label">KI:</span> {html.escape(item["llm_summary"])}</p>'
+
+    # LLM keywords as chips
+    llm_keywords_html = ""
+    if item.get("llm_keywords"):
+        chips = "".join(
+            f'<span class="llm-chip">{html.escape(kw.strip())}</span>'
+            for kw in item["llm_keywords"].split(",")
+            if kw.strip()
+        )
+        llm_keywords_html = f'<div style="margin-bottom:8px;">{chips}</div>'
+
+    # LLM recommendation divergence
+    llm_rec_html = ""
+    llm_rec = item.get("llm_recommendation")
+    heuristic_rec = item.get("recommendation", "")
+    if llm_rec and llm_rec != heuristic_rec:
+        llm_rec_html = (
+            f'<div style="font-size:12px;margin-bottom:8px;color:#665a50;">'
+            f'Heuristik: <span class="chip {html.escape(heuristic_rec)}">{html.escape(heuristic_rec)}</span> '
+            f'<span class="llm-label">KI sagt:</span> <span class="chip {html.escape(llm_rec)}">{html.escape(llm_rec)}</span>'
+            f'</div>'
+        )
+
     return f"""
     <article class="card">
       <div class="meta">
@@ -137,7 +186,11 @@ def render_card(item: dict) -> str:
         <span class="chip backlog">{html.escape(item['competitor_slug'])}</span>
       </div>
       <h2 class="title">{html.escape(item['title'])}</h2>
+      {confidence_html}
       <p class="summary">{html.escape(item['summary'])}</p>
+      {llm_summary_html}
+      {llm_keywords_html}
+      {llm_rec_html}
       <div class="footer">
         <span><strong>Quelle:</strong> <a href="{html.escape(source_link)}">{html.escape(source_text)}</a></span>
         <span class="score">Score {item['priority_score']:.3f}</span>
@@ -151,6 +204,21 @@ def render_digest_card(item: dict) -> str:
     competitors = ", ".join(item["competitors"])
     sources = ", ".join(item["source_mix"])
     evidence = " | ".join(item["evidence"][:3])
+
+    # LLM summaries as bulleted list
+    llm_section = ""
+    llm_summaries = item.get("llm_summaries", [])
+    if llm_summaries:
+        bullets = "".join(f"<li>{html.escape(s)}</li>" for s in llm_summaries)
+        llm_section = f'<div style="margin-top:8px;"><span class="llm-label">KI-Einschaetzung:</span><ul class="llm-bullets">{bullets}</ul></div>'
+
+    # Average confidence indicator
+    confidence_dot = ""
+    avg_confidence = item.get("avg_confidence")
+    if avg_confidence is not None:
+        level = "high" if avg_confidence > 0.7 else "medium" if avg_confidence >= 0.4 else "low"
+        confidence_dot = f'<span class="confidence-indicator {level}" title="KI-Konfidenz: {int(avg_confidence * 100)}%"></span>'
+
     return f"""
     <article class="digest-card">
       <div class="meta">
@@ -160,10 +228,11 @@ def render_digest_card(item: dict) -> str:
       </div>
       <h2 class="title">{html.escape(item['signal_label'])}</h2>
       <p class="summary">{html.escape(item['decision'])}</p>
+      {llm_section}
       <div class="footer">
         <span><strong>Kandidaten:</strong> {html.escape(competitors)}</span>
         <span><strong>Quellen:</strong> {html.escape(sources)}</span>
-        <span class="score">Digest {item['priority_score']:.3f}</span>
+        <span class="score">Digest {item['priority_score']:.3f}{confidence_dot}</span>
       </div>
       <p class="summary"><strong>Evidenz:</strong> {html.escape(evidence)}</p>
     </article>

@@ -80,6 +80,7 @@ REQUIRED_COLUMNS = {
         "llm_recommendation": "TEXT",
         "llm_keywords": "TEXT",
         "llm_model": "TEXT",
+        "telegram_sent_at": "TEXT",
     }
 }
 

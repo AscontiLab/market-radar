@@ -9,6 +9,10 @@ from market_radar.collector import fetch_snapshot
 from market_radar.config import DEFAULT_DATA_DIR, DEFAULT_DB_PATH, load_products
 from market_radar.dashboard import serve_dashboard
 from market_radar.digest import build_decision_digest
+from market_radar.feature_suggestions import (
+    format_suggestions_text,
+    generate_feature_suggestions,
+)
 from market_radar.github_collector import (
     fetch_github_latest_release,
     fetch_github_readme,
@@ -122,6 +126,26 @@ def build_parser() -> argparse.ArgumentParser:
         "backfill",
         help="Backfill NULL source_type/source_kind in source_snapshots.",
     )
+
+    # Alerts-Kommando: Telegram-Alerts fuer Adopt-Now-Signale senden
+    alerts_parser = subparsers.add_parser(
+        "alerts",
+        help="Send Telegram alerts for adopt_now signals.",
+    )
+    alerts_parser.add_argument(
+        "--since-hours",
+        type=int,
+        default=24,
+        help="Look back window in hours (default: 24).",
+    )
+
+    # Suggest-Kommando: Feature-Vorschlaege aus Digest ableiten
+    suggest_parser = subparsers.add_parser(
+        "suggest",
+        help="Generate concrete feature suggestions from the decision digest.",
+    )
+    suggest_parser.add_argument("--product", default=None, help="Optional product slug.")
+    suggest_parser.add_argument("--limit", type=int, default=20, help="Max suggestions to show.")
 
     return parser
 
@@ -279,6 +303,13 @@ def main() -> int:
             digest = build_decision_digest(connection, product_slug=None, limit=5)
             print(f"Decision digest: {len(digest)} items")
 
+            # Feature-Vorschlaege generieren
+            suggestions = generate_feature_suggestions(digest, config)
+            if suggestions:
+                print(f"\n{format_suggestions_text(suggestions)}\n")
+            else:
+                print("Keine Feature-Vorschlaege aus aktuellem Digest.")
+
             # Optional: LLM-Anreicherung
             enriched_count = 0
             if args.enrich:
@@ -291,14 +322,62 @@ def main() -> int:
                     enriched_count = enrich_batch(connection, config=config, limit=50)
                     print(f"Enriched {enriched_count} signals via LLM")
 
+            # Telegram-Alerts senden (wenn konfiguriert)
+            alert_count = 0
+            bot_token = os.getenv("ASCONTILAB_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN", "")
+            chat_id = os.getenv("ASCONTILAB_CHAT_ID") or os.getenv("TELEGRAM_CHAT_ID", "")
+            if bot_token and chat_id:
+                try:
+                    from market_radar.telegram_alerts import send_digest_alerts
+
+                    alert_count = send_digest_alerts(
+                        connection, config, bot_token, chat_id, since_hours=24,
+                    )
+                    print(f"Sent {alert_count} Telegram alerts")
+                except Exception as exc:
+                    print(f"Warnung: Telegram-Alerts fehlgeschlagen: {exc}")
+
         # Zusammenfassung
         print("\n--- Pipeline Zusammenfassung ---")
         print(f"  Snapshots:        {snapshot_count}")
         print(f"  GitHub Snapshots: {github_count}")
         print(f"  Signale:          {signal_count}")
         print(f"  Digest Items:     {len(digest)}")
+        print(f"  Feature-Vorschlaege: {len(suggestions)}")
         if args.enrich:
             print(f"  LLM-Enriched:     {enriched_count}")
+        print(f"  Telegram-Alerts:  {alert_count}")
+        return 0
+
+    if args.command == "alerts":
+        bot_token = os.getenv("ASCONTILAB_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.getenv("ASCONTILAB_CHAT_ID") or os.getenv("TELEGRAM_CHAT_ID", "")
+        if not bot_token or not chat_id:
+            print("Fehler: TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID nicht gesetzt.")
+            return 1
+
+        from market_radar.telegram_alerts import send_digest_alerts
+
+        init_db(args.db)
+        with connect(args.db) as connection:
+            count = send_digest_alerts(
+                connection, config, bot_token, chat_id, since_hours=args.since_hours,
+            )
+        print(f"{count} Telegram-Alerts gesendet.")
+        return 0
+
+    if args.command == "suggest":
+        init_db(args.db)
+        with connect(args.db) as connection:
+            digest = build_decision_digest(
+                connection,
+                product_slug=args.product,
+                limit=20,
+            )
+        suggestions = generate_feature_suggestions(digest, config)
+        if args.limit:
+            suggestions = suggestions[: args.limit]
+        print(format_suggestions_text(suggestions))
         return 0
 
     if args.command == "backfill":
@@ -349,7 +428,11 @@ def fetch_snapshots(
 
         for competitor in selected:
             for source_url in competitor.get("source_urls", []):
-                snapshot = fetch_snapshot(source_url, raw_dir=raw_dir)
+                try:
+                    snapshot = fetch_snapshot(source_url, raw_dir=raw_dir)
+                except Exception as exc:
+                    print(f"  Warnung: {competitor['slug']} ({source_url}) fehlgeschlagen: {exc}")
+                    continue
                 connection.execute(
                     """
                     INSERT OR IGNORE INTO source_snapshots (
@@ -400,18 +483,24 @@ def fetch_github_snapshots(
 
         for competitor in selected:
             for repo_name in competitor.get("github_repos", []):
-                readme_snapshot = fetch_github_readme(repo_name, raw_dir=raw_dir, token=token)
-                _insert_snapshot(connection, competitor["slug"], readme_snapshot)
-                total += 1
-
-                release_snapshot = fetch_github_latest_release(
-                    repo_name,
-                    raw_dir=raw_dir,
-                    token=token,
-                )
-                if release_snapshot is not None:
-                    _insert_snapshot(connection, competitor["slug"], release_snapshot)
+                try:
+                    readme_snapshot = fetch_github_readme(repo_name, raw_dir=raw_dir, token=token)
+                    _insert_snapshot(connection, competitor["slug"], readme_snapshot)
                     total += 1
+                except Exception as exc:
+                    print(f"  Warnung: {competitor['slug']} README ({repo_name}) fehlgeschlagen: {exc}")
+
+                try:
+                    release_snapshot = fetch_github_latest_release(
+                        repo_name,
+                        raw_dir=raw_dir,
+                        token=token,
+                    )
+                    if release_snapshot is not None:
+                        _insert_snapshot(connection, competitor["slug"], release_snapshot)
+                        total += 1
+                except Exception as exc:
+                    print(f"  Warnung: {competitor['slug']} Release ({repo_name}) fehlgeschlagen: {exc}")
 
         connection.commit()
 

@@ -15,17 +15,21 @@ Decision Feed:
 
 ## Aktueller Stand
 
-Der aktuelle Stand ist ein funktionierendes `v0.2`-Grundgeruest:
+Der aktuelle Stand ist `v0.3`:
 
 - Watchlist fuer `stock-scanner` und `sports-scanner`
 - SQLite-Storage fuer Produkte, Wettbewerber, Snapshots und Signale
 - Web-Snapshots fuer Produktseiten, Changelogs und Feature-Seiten
 - GitHub-Snapshots fuer `README` und `latest release`
-- erste heuristische Signal-Erkennung
-- `decision_queue` mit Priorisierung
+- heuristische Signal-Erkennung mit Keyword-Matching
+- `decision_queue` mit Priorisierung und Deduplizierung (ROW_NUMBER)
 - `decision_digest` mit 3 bis 5 verdichteten Produktentscheidungen
+- inhaltliche Snapshot-Diffs (Jaccard-Distanz, Satz-basiert)
+- LLM-Enrichment via Claude Haiku (Konfidenz, Summary, Recommendation)
 - kleine lokale Dashboard-Ansicht
 - Integration in `unified-dashboard` unter `/market-radar`
+- `run-all` Pipeline-Befehl fuer kompletten Durchlauf
+- Cron-Job Mo-Fr 07:15 UTC via `run_market_radar.sh`
 
 ## Projektstruktur
 
@@ -69,6 +73,12 @@ GitHub-Quellen laufen als:
 
 ```bash
 cd /home/claude-agent/market-radar
+
+# Komplette Pipeline (empfohlen)
+python3 main.py run-all              # ohne LLM
+python3 main.py run-all --enrich     # mit Claude Haiku Enrichment
+
+# Einzelschritte
 python3 main.py plan
 python3 main.py init-db
 python3 main.py seed
@@ -77,13 +87,21 @@ python3 main.py fetch-github --limit 3
 python3 main.py generate-signals
 python3 main.py decision-queue --limit 10
 python3 main.py decision-digest --limit 5
+
+# Neue Befehle (v0.3)
+python3 main.py backfill             # source_type/source_kind nachtraeglich setzen
+python3 main.py diff --limit 20      # inhaltliche Snapshot-Diffs anzeigen
+python3 main.py enrich --limit 20    # LLM-Enrichment fuer offene Signale
+
+# Dashboard
 python3 main.py dashboard --host 127.0.0.1 --port 8791
 ```
 
 Hinweis:
 
 - `8787` war lokal bereits belegt, daher wurde zuletzt mit `8791` getestet.
-- Optional kann `GITHUB_TOKEN` gesetzt werden, um GitHub-API-Limits entspannter zu behandeln.
+- `GITHUB_TOKEN` optional fuer hoehere API-Limits.
+- `ANTHROPIC_API_KEY` noetig fuer LLM-Enrichment (Claude Haiku).
 
 ## Quellextraktion
 
@@ -114,13 +132,10 @@ Die erste Pipeline arbeitet bewusst einfach und nachvollziehbar:
 
 ## Offene naechste Schritte
 
-1. Snapshot-Diffs inhaltlich statt nur ueber Hashes auswerten
-2. GitHub-Releases staerker von README-Signalen unterscheiden
-3. Deduplizierung und Signal-Clustering ausbauen
-4. aus dem Digest direkte Feature-Vorschlaege pro Repo ableiten
-
-## Git-Status
-
-`market-radar` ist aktuell **noch kein Git-Repository**. Deshalb wurden die
-Dateien lokal sauber aufgebaut und dokumentiert, aber nicht committed oder
-gepusht.
+1. ~~Snapshot-Diffs inhaltlich statt nur ueber Hashes auswerten~~ (erledigt: diff.py)
+2. ~~Deduplizierung und Signal-Clustering ausbauen~~ (erledigt: ROW_NUMBER Dedup)
+3. ~~LLM-Enrichment fuer bessere Signal-Qualitaet~~ (erledigt: llm_enricher.py)
+4. GitHub-Releases staerker von README-Signalen unterscheiden
+5. aus dem Digest direkte Feature-Vorschlaege pro Repo ableiten
+6. LLM-Enrichment-Ergebnisse im Dashboard anzeigen
+7. Telegram-Alerts fuer adopt_now Signale
